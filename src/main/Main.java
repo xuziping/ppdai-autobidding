@@ -118,7 +118,7 @@ public class Main {
 				process(++pageSize);
 			} catch (Exception e) {
 				try {
-					log.info("SPENT: " + GOT_AMOUNT);
+//					log.info("SPENT: " + GOT_AMOUNT);
 					Thread.sleep(SLEEP_TIME);
 					pageSize = 0;
 				} catch (Exception e1) {
