@@ -118,7 +118,6 @@ public class Main {
 				process(++pageSize);
 			} catch (Exception e) {
 				try {
-//					log.info("SPENT: " + GOT_AMOUNT);
 					Thread.sleep(SLEEP_TIME);
 					pageSize = 0;
 				} catch (Exception e1) {
@@ -190,7 +189,9 @@ public class Main {
 
 	private static boolean isAcceptable(long listingId, String creditCode, long amount, int rate, int months,
 			int payWay) {
-		if (((rate > 12 && months == 12) || (rate > 13 && months == 18))
+		if (
+//				((rate > 12 && months == 12) || (rate > 13 && months == 18))
+				( rate > 13 && rate < 16 )
 				&& ("AAA".equalsIgnoreCase(creditCode) || "AA".equalsIgnoreCase(creditCode))
 				&& payWay == CONDITION_PAYWAY) {
 			return true;
