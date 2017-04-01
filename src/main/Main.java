@@ -36,7 +36,9 @@ public class Main {
 
 	private static int CONDITION_PAYWAY = 0;
 
-	private static long EACH_AMOUNT = 100;
+	private static long EACH_AMOUNT_1 = 100;
+
+	private static long EACH_AMOUNT_2 = 100;
 
 	private static int TOTAL_AMOUNT = 1000;
 
@@ -44,10 +46,14 @@ public class Main {
 
 	private static int SLEEP_TIME = 1000;
 
+	private static double TARGET_RATE_1 = 13;
+
+	private static double TARGET_RATE_2 = 12;
+
 	private static String APPID = null;
-	
+
 	private static String PUBLIC_KEY = null;
-	
+
 	private static String PRIVATE_KEY = null;
 
 	private static void loadProperties() throws Exception {
@@ -58,7 +64,10 @@ public class Main {
 			fi = new FileInputStream("ppdai.properties");
 			in = new BufferedInputStream(fi);
 			prop.load(in);
-			EACH_AMOUNT = Integer.parseInt(prop.getProperty("EACH_AMOUNT", "100"));
+			TARGET_RATE_1 = Double.parseDouble(prop.getProperty("TARGET_RATE_1", "-1"));
+			TARGET_RATE_2 = Double.parseDouble(prop.getProperty("TARGET_RATE_2", "-1"));
+			EACH_AMOUNT_1 = Integer.parseInt(prop.getProperty("EACH_AMOUNT_1", "100"));
+			EACH_AMOUNT_2 = Integer.parseInt(prop.getProperty("EACH_AMOUNT_2", "100"));
 			TOTAL_AMOUNT = Integer.parseInt(prop.getProperty("TOTAL_AMOUNT", "1000"));
 			SLEEP_TIME = Integer.parseInt(prop.getProperty("SLEEP_TIME", "1000"));
 			APPID = prop.getProperty("APPID");
@@ -88,8 +97,11 @@ public class Main {
 		try {
 			loadProperties();
 			log.info("###############################");
-			log.info("EACH_AMOUNT: " + EACH_AMOUNT);
 			log.info("TOTAL_AMOUNT: " + TOTAL_AMOUNT);
+			log.info("EACH_AMOUNT_1: " + EACH_AMOUNT_1);
+			log.info("TARGET_RATE_1: " + TARGET_RATE_1);
+			log.info("EACH_AMOUNT_2: " + EACH_AMOUNT_2);
+			log.info("TARGET_RATE_2: " + TARGET_RATE_2);
 			log.info("SLEEP_TIME: " + SLEEP_TIME);
 			log.info("APPID: " + APPID);
 			log.info("PUBLIC_KEY: " + PUBLIC_KEY);
@@ -170,8 +182,19 @@ public class Main {
 					int months = loanObj.getInt("Months");
 					int payWay = loanObj.getInt("PayWay");
 
-					if (isAcceptable(listingId, creditCode, amount, rate, months, payWay)) {
-						long buyAmount = amount < EACH_AMOUNT ? amount : EACH_AMOUNT;
+					if (TARGET_RATE_1 > 0 && EACH_AMOUNT_1 > 0
+							&& isAcceptable(listingId, creditCode, amount, rate, TARGET_RATE_1, months, payWay)) {
+
+						long buyAmount = amount < EACH_AMOUNT_1 ? amount : EACH_AMOUNT_1;
+						bidding(listingId, buyAmount);
+						log.info("Called bidding, listingId: " + listingId + ", buyAmount: " + buyAmount
+								+ ", creditCode: " + creditCode + ", rate: " + rate + ", months: " + months
+								+ ", payWay: " + payWay);
+
+					} else if (TARGET_RATE_2 > 0 && EACH_AMOUNT_2 > 0
+							&& isAcceptable(listingId, creditCode, amount, rate, TARGET_RATE_2, months, payWay)) {
+
+						long buyAmount = amount < EACH_AMOUNT_2 ? amount : EACH_AMOUNT_2;
 						bidding(listingId, buyAmount);
 						log.info("Called bidding, listingId: " + listingId + ", buyAmount: " + buyAmount
 								+ ", creditCode: " + creditCode + ", rate: " + rate + ", months: " + months
@@ -187,13 +210,16 @@ public class Main {
 		}
 	}
 
-	private static boolean isAcceptable(long listingId, String creditCode, long amount, int rate, int months,
-			int payWay) {
-		if (
-//				((rate > 12 && months == 12) || (rate > 13 && months == 18))
-				( rate > 13 && rate < 16 )
+	private static boolean isAcceptable(long listingId, String creditCode, long amount, int rate, double targetRate,
+			int months, int payWay) {
+		if (targetRate > 0 && (rate > targetRate && rate < 16)
 				&& ("AAA".equalsIgnoreCase(creditCode) || "AA".equalsIgnoreCase(creditCode))
 				&& payWay == CONDITION_PAYWAY) {
+			
+			if(rate == 13) {
+				return months == 12;
+			}
+			
 			return true;
 		}
 		return false;
